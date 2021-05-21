@@ -60,7 +60,8 @@
             var index = mySelect1.selectedIndex;
             countrySlected = mySelect1.options[index].text;
             var countryInfo = countrySlected.split(",");
-            var queryLink = "https://public-holiday.p.rapidapi.com/2021/US";
+            var queryLink = "https://public-holiday.p.rapidapi.com/2021/" + countryInfo[1];
+			// queryLink = "https://public-holiday.p.rapidapi.com/2021/US"
             fetch(queryLink, {
                 "method": "GET",
                 "headers": {
@@ -90,7 +91,7 @@
         }
         function Getcities(){
             var countryInfo = countrySlected.split(",");
-            fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/cities?countryIds=" + "US", {
+            fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/cities?countryIds=" + countryInfo[1], {
                 "method": "GET",
                 "headers": {
                     "x-rapidapi-key": "7341c491fbmsh5633f4a3be4d132p156dc4jsnca9d501d0897",
@@ -129,7 +130,8 @@
                 var city = mySelect3.options[index].text;
                 var cityInfo = city.split(",");
                 var query = "https://weatherapi-com.p.rapidapi.com/forecast.json?q=" + cityInfo[0] + "&dt=" + holidayInfo[1];
-                fetch("https://weatherapi-com.p.rapidapi.com/forecast.json?q=London&dt=2021-05-22", {
+				//var query = "https://weatherapi-com.p.rapidapi.com/forecast.json?q=London&dt=2021-05-22";
+                fetch(query, {
                     "method": "GET",
                     "headers": {
                         "x-rapidapi-key": "7341c491fbmsh5633f4a3be4d132p156dc4jsnca9d501d0897",
@@ -163,6 +165,7 @@
         var index = mySelect3.selectedIndex;
         var city = mySelect3.options[index].text;
         var cityInfo = city.split(",");
+		var query = 
         fetch("https://hotels4.p.rapidapi.com/locations/search?query=new%20york&locale=en_US", {
             "method": "GET",
             "headers": {
@@ -255,6 +258,6 @@
      <tr>
                     <td height="21"><select name="sel4" id="sel4" onFocus="Getholiday()">
                     </select></td>
-                </tr>
+     </tr>
 </table>
 </body>
