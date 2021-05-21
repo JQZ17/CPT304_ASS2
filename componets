@@ -15,9 +15,19 @@
         var countrySlected = "";
         var countrylist = new Array();
         var holidaylist = new Array();
+        var citylist = new Array();
         arr = new Array("JavaScript and ASP","JavaScript and JSP","JavaScript and ASP.NET","JavaScript and PHP");
+        var weather_Info = "";
+        var hotel_Info = "";
         counts=arr.length;
-        function Myselect(){
+        function dateDiff(sDate2) {
+           var sDate1=new Date(sDate2).getDate();
+			
+			var dif=sDate1-(new Date()).getDate();
+            
+            return dif;
+        }
+        function Getcountry(){
             fetch("https://referential.p.rapidapi.com/v1/country?fields=currency%2Ccurrency_num_code%2Ccurrency_code%2Ccontinent_code%2Ccurrency%2Ciso_a3%2Cdial_code", {
                 "method": "GET",
                 "headers": {
@@ -50,7 +60,7 @@
             var index = mySelect1.selectedIndex;
             countrySlected = mySelect1.options[index].text;
             var countryInfo = countrySlected.split(",");
-            var queryLink = "https://public-holiday.p.rapidapi.com/2021/" + countrySlected[1];
+            var queryLink = "https://public-holiday.p.rapidapi.com/2021/US";
             fetch(queryLink, {
                 "method": "GET",
                 "headers": {
@@ -64,38 +74,187 @@
                 .then(data => {
                     var num = 0;
                     for (i in data){
-                        holidaylist[num] = data[i].name;
+                        holidaylist[num] = data[i].name + ","+ data[i].date;
                         num = num + 1;
                     }
-                    document.getElementById("codeInput").value = holidaylist[1];
+                    var i;
+                    for (i=0;i < holidaylist.length; i++) {
+                        document.form2.sel2.options[i] = new Option(holidaylist[i],i);
+                    }
+                    // document.getElementById("codeInput").value = holidaylist[1];
                     console.log(data);
                 })
                 .catch(err => {
                     console.error(err);
                 });
         }
+        function Getcities(){
+            var countryInfo = countrySlected.split(",");
+            fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/cities?countryIds=" + "US", {
+                "method": "GET",
+                "headers": {
+                    "x-rapidapi-key": "7341c491fbmsh5633f4a3be4d132p156dc4jsnca9d501d0897",
+                    "x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
+                }
+            })
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    var citydata = data.data;
+                    var num = 0;
+                    for (i in citydata){
+                        citylist[num] = citydata[i].name + "," + citydata[i].latitude + "," + citydata[i].longitude;
+                        num = num + 1;
+                    }
+                    var i;
+                    for (i=0;i < citylist.length; i++) {
+                        document.form3.sel3.options[i] = new Option(citylist[i],i);
+                    }
+                    // document.getElementById("codeInput").value = holidaylist[1];
+                    console.log(data);
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        }
+        function Getweather(){
+            var mySelect2 =  document.getElementById("sel2");
+            var index = mySelect2.selectedIndex;
+            var holiday = mySelect2.options[index].text;
+            var holidayInfo = holiday.split(",");
+            if (dateDiff(holidayInfo[holidayInfo[holidayInfo.length-1]]) > 0 && dateDiff(holidayInfo[holidayInfo[holidayInfo.length-1]]) <= 14){
+                var mySelect3 =  document.getElementById("sel3");
+                var index = mySelect3.selectedIndex;
+                var city = mySelect3.options[index].text;
+                var cityInfo = city.split(",");
+                var query = "https://weatherapi-com.p.rapidapi.com/forecast.json?q=" + cityInfo[0] + "&dt=" + holidayInfo[1];
+                fetch("https://weatherapi-com.p.rapidapi.com/forecast.json?q=London&dt=2021-05-22", {
+                    "method": "GET",
+                    "headers": {
+                        "x-rapidapi-key": "7341c491fbmsh5633f4a3be4d132p156dc4jsnca9d501d0897",
+                        "x-rapidapi-host": "weatherapi-com.p.rapidapi.com"
+                    }
+                })
+                    .then(response => {
+                        return response.json();
+                    })
+                    .then(data => {
+                        var forecast = data.forecast;
+                        var forecastday= forecast.forecastday;
+                        var forecastdayInf = forecastday[0];
+                        var condition = forecastdayInf.condition;
+                        weather_Info = condition.text;
+                        document.getElementById("codeInput").value = weather_Info;
+                        console.log(data);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    });
+
+            }
+            else{
+                weather_Info = "The date has passed or is more than 14 days after the current day"
+                document.getElementById("codeInput").value = weather_Info;
+            }
+        }
+    function Gethotelinformation(){
+        var mySelect3 =  document.getElementById("sel3");
+        var index = mySelect3.selectedIndex;
+        var city = mySelect3.options[index].text;
+        var cityInfo = city.split(",");
+        fetch("https://hotels4.p.rapidapi.com/locations/search?query=new%20york&locale=en_US", {
+            "method": "GET",
+            "headers": {
+                "x-rapidapi-key": "7341c491fbmsh5633f4a3be4d132p156dc4jsnca9d501d0897",
+                "x-rapidapi-host": "hotels4.p.rapidapi.com"
+            }
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                var suggestions = data.suggestions;
+                var HOTEL_GROUP= suggestions;
+                for (let item of HOTEL_GROUP){
+                    for(var k=0;k<item.entities.length;k++ ){
+					var _s=item.entities[k].name +" "+item.entities[k].longitude +" "+item.entities[k].latitude;
+
+					 document.getElementById("sel4").options[k] = new Option(_s,k);
+					}
+                }
+                document.getElementById("codeInput2").value = hotel_Info;
+            })
+            .catch(err => {
+                console.error(err);
+            });
+    }
     </script>
 </head>
 <body>
 <table width="600" height="100" border="1">
     <tr>
-        <th>Select country code</th>
-        <th>get the countries' public holiday</th>
+        <th>Select country </th>
     </tr>
     <tr>
         <td align="center" valign="top" ><form name="form1">
             <table width="235" height="69" border="0" align="center" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td height="21"><select name="sel" id="sel" onFocus="Myselect()">
+                    <td height="21"><select name="sel" id="sel" onFocus="Getcountry()">
                     </select></td>
                 </tr>
             </table>
         </form></td>
-        <td><input id="button1" type="button" value="click" onclick="Getholiday()"/></td>
     </tr>
 </table>
+<table width="600" height="100" border="1">
+    <tr>
+        <th>see the holidays of the country and select one date you want to travel</th>
+    </tr>
+    <tr>
+        <td align="center" valign="top" ><form name="form2">
+            <table width="235" height="69" border="0" align="center" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td height="21"><select name="sel2" id="sel2" onFocus="Getholiday()">
+                    </select></td>
+                </tr>
+            </table>
+        </form></td>
+    </tr>
+</table>
+<table width="600" height="100" border="1">
+    <tr>
+        <th>see the holidays of the country and select one date you want to travel</th>
+    </tr>
+    <tr>
+        <td align="center" valign="top" ><form name="form3">
+            <table width="235" height="69" border="0" align="center" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td height="21"><select name="sel3" id="sel3" onFocus="Getcities()">
+                    </select></td>
+                </tr>
+            </table>
+        </form></td>
+    </tr>
+</table>
+
 <table  width="600" height="100" border="1">
-    <tr><th>the country code selected</th></tr>
+    <tr><th>get weather information</th></tr>
+    <td><input id="button1" type="button" value="click" onclick="Getweather()"/></td>
+</table>
+<table  width="600" height="100" border="1">
+    <tr><th>weather information</th></tr>
     <tr><td><input  id="codeInput" type="text" value="Hi~"/></td></tr>
+</table>
+<table  width="600" height="100" border="1">
+    <tr><th>get hotelinformation</th></tr>
+    <td><input id="button2" type="button" value="click" onclick="Gethotelinformation()"/></td>
+</table>
+<table  width="600" height="100" border="1">
+    <tr><th>hotelinformation</th></tr>
+     <tr>
+                    <td height="21"><select name="sel4" id="sel4" onFocus="Getholiday()">
+                    </select></td>
+                </tr>
 </table>
 </body>
